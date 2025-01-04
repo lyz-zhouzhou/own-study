@@ -1,10 +1,14 @@
 package org.example.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections.MapUtils;
 import org.apache.logging.log4j.util.Strings;
+import org.apache.poi.hssf.usermodel.HSSFPatriarch;
+import org.example.base.BaseRender;
 import org.example.service.TestService;
 import org.example.utils.FileUtil;
 import org.example.utils.PrintUtil;
+import org.example.utils.SpringContextHolder;
 import org.jxls.common.Context;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -13,10 +17,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class TestServiceImpl implements TestService {
@@ -32,7 +33,6 @@ public class TestServiceImpl implements TestService {
             }
             InputStream resourceAsStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("excelTemplate/" + templateName);
             //调用外部接口获得模板数据(如何判断获取哪个模板的数据)
-            // 准备数据
             Map<String, Object> data = new HashMap<>();
             data.put("orderNumber", "SO2000");
             data.put("customerName", "客户");
@@ -59,13 +59,23 @@ public class TestServiceImpl implements TestService {
             two.put("subUom", "包");
             two.put("location", "locationA");
             items.add(two);
+            // 渲染数据
+            Map<String, BaseRender> beansOfType = SpringContextHolder.getContext().getBeansOfType(BaseRender.class);
+            if (MapUtils.isNotEmpty(beansOfType) && beansOfType.containsKey(templateName)) {
+                BaseRender baseRender = beansOfType.get(templateName);
+                baseRender.beforeRender(items, data);
+                List<JSONObject> itemsObj = baseRender.getItemsObj();
+                Map<String, Object> otherParams = baseRender.getOtherParams();
+                //处理数据
+                Context context = new Context(otherParams);
+                context.putVar("items", itemsObj);
+                //获得可打印文件字节流
+                byte[] bytes = FileUtil.generateStream(response, templateName, resourceAsStream, new ByteArrayOutputStream(), context);
+                //printUtil.print(bytes, "AA", null);
 
-            //处理数据
-            Context context = new Context(data);
-            context.putVar("items", items);
-            //获得可打印文件字节流
-            byte[] bytes = FileUtil.generateStream(templateName, resourceAsStream, new ByteArrayOutputStream(), context);
-            //printUtil.print(bytes, printName, null);
+            } else {
+                return "未获取到渲染器";
+            }
             return "打印成功";
         } catch (Exception e) {
             e.printStackTrace();
@@ -75,6 +85,7 @@ public class TestServiceImpl implements TestService {
 
     /**
      * 标准打印
+     *
      * @param templateName
      * @param printName
      * @return
@@ -136,7 +147,7 @@ public class TestServiceImpl implements TestService {
      * 自定义打印
      */
     @Override
-    public String printCustomize(String templateName, String printName,JSONObject jsonObject) {
+    public String printCustomize(String templateName, String printName, JSONObject jsonObject) {
         try {
             //根据模板名称寻找是否存在此模板
             if (!isTemplateExist(templateName)) {

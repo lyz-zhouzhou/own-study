@@ -1,6 +1,8 @@
 package org.example.controller;
 
+import com.google.zxing.WriterException;
 import org.example.service.TestService;
+import org.example.utils.BarcodeGenerator;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpHeaders;
@@ -11,10 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,7 +24,26 @@ public class TestController {
     private static final String TEMPLATE_DIR = "src/main/resources/excelTemplate";
     @Resource
     private TestService testService;
+    @Resource
+    private BarcodeGenerator barcodeGenerator;
 
+    @GetMapping("/test")
+    public ResponseEntity<Void> test(HttpServletResponse response) throws IOException, WriterException {
+        // 生成条形码图片
+        String barcodeText = "44";
+        byte[] barcodeBytes = barcodeGenerator.generateBarcodeImage(barcodeText, 100, 200);
+
+        // 设置响应头
+        response.setContentType(MediaType.IMAGE_PNG_VALUE); // 设置 MIME 类型为 image/png
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=barcode.png"); // 设置下载文件名
+
+        // 将字节数组写入响应输出流
+        try (OutputStream outputStream = response.getOutputStream()) {
+            outputStream.write(barcodeBytes);
+            outputStream.flush();
+        }
+        return ResponseEntity.ok().build();
+    }
 
     @GetMapping("/pdf")
     public ResponseEntity<Void> exportToPdf(HttpServletResponse response) throws IOException {

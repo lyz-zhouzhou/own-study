@@ -1,6 +1,7 @@
 package org.example.utils;
 
 import com.alibaba.fastjson.JSONObject;
+import org.apache.logging.log4j.util.Strings;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.printing.PDFPrintable;
 import org.apache.pdfbox.printing.Scaling;
@@ -27,13 +28,15 @@ public class PrintUtil {
             InputStream inputStream = new ByteArrayInputStream(bytes);
             PDDocument pdDocument = PDDocument.load(inputStream);
             PrinterJob printerJob = PrinterJob.getPrinterJob();
-            if (Objects.nonNull(jsonObject)) {
-                String printerName = jsonObject.getString("printerName");
-                PrintService printService = pickPrinter(printerName);
+            if (!Strings.isEmpty(printName)) {
+                PrintService printService = pickPrinter(printName);
                 if (Objects.isNull(printService)) {
-                    return "打印失败，未找到名称为" + printerName + "的打印机，请检查";
+                    return "打印失败，未找到名称为" + printName + "的打印机，请检查";
                 }
+            } else {
+                return "打印机名称不可为空";
             }
+
             PDFPrintable pdfPrintable = new PDFPrintable(pdDocument, Scaling.SHRINK_TO_FIT);
             Book book = new Book();
             PageFormat pageFormat = new PageFormat();
@@ -79,16 +82,17 @@ public class PrintUtil {
         if (Objects.isNull(jsonObject)) {
             paper.setSize(595, 842);
             paper.setImageableArea(10, 10, 575, 822);
-        }
-        Double width = jsonObject.containsKey("width") ? jsonObject.getDouble("width") : 595;
-        Double height = jsonObject.containsKey("height") ? jsonObject.getDouble("height") : 842;
-        Double x = jsonObject.containsKey("x") ? jsonObject.getDouble("x") : 10;
-        Double y = jsonObject.containsKey("y") ? jsonObject.getDouble("y") : 10;
-        Double allowPrintWidth = jsonObject.containsKey("allowPrintWidth") ? jsonObject.getDouble("allowPrintWidth") : 575;
-        Double allowPrintHeight = jsonObject.containsKey("allowPrintHeight") ? jsonObject.getDouble("allowPrintHeight") : 822;
+        } else {
+            Double width = jsonObject.containsKey("width") ? jsonObject.getDouble("width") : 595;
+            Double height = jsonObject.containsKey("height") ? jsonObject.getDouble("height") : 842;
+            Double x = jsonObject.containsKey("x") ? jsonObject.getDouble("x") : 10;
+            Double y = jsonObject.containsKey("y") ? jsonObject.getDouble("y") : 10;
+            Double allowPrintWidth = jsonObject.containsKey("allowPrintWidth") ? jsonObject.getDouble("allowPrintWidth") : 575;
+            Double allowPrintHeight = jsonObject.containsKey("allowPrintHeight") ? jsonObject.getDouble("allowPrintHeight") : 822;
 
-        paper.setSize(width, height);
-        paper.setImageableArea(x, y, allowPrintWidth, allowPrintHeight);
+            paper.setSize(width, height);
+            paper.setImageableArea(x, y, allowPrintWidth, allowPrintHeight);
+        }
 
         return paper;
     }
