@@ -1,7 +1,6 @@
 package org.example.utils;
 
 import com.aspose.cells.*;
-import com.itextpdf.text.DocumentException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,8 +39,6 @@ public class PdfUtil {
             //生成的pdf中可能会出现不可读的字符（例如块）。对于这种情况，用户应将此属性保留为 true，以便可以搜索替代字体并使用替代字体来呈现文本；
             saveOptions.setCheckFontCompatibility(false);
             workbook.save(outputStream, saveOptions);
-        } catch (DocumentException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (Exception e) {

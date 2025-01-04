@@ -1,10 +1,6 @@
 package org.example.utils;
 
-import org.apache.commons.jexl3.JexlBuilder;
-import org.apache.commons.jexl3.JexlEngine;
-import org.apache.commons.jexl3.internal.Engine;
 import org.jxls.common.Context;
-import org.jxls.expression.JexlExpressionEvaluator;
 import org.jxls.transform.Transformer;
 import org.jxls.util.JxlsHelper;
 import org.jxls.util.TransformerFactory;
@@ -17,8 +13,18 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URLEncoder;
 
-public class CommonUtil {
+public class FileUtil {
 
+    /**
+     * 页面可下载打印文件方法
+     * @param response 响应体
+     * @param excelTemplate 模板名称
+     * @param inputStream 输入流
+     * @param outputStream 输出流
+     * @param context 模板数据容器
+     * @return 需要打印的文件字节流
+     * @throws IOException io异常
+     */
     public static byte[] generateStream(HttpServletResponse response, String excelTemplate, InputStream inputStream, ByteArrayOutputStream outputStream,
                                         Context context) throws IOException {
         //转成excel 输出流
@@ -33,47 +39,64 @@ public class CommonUtil {
         return buf;
     }
 
+    /**
+     * 页面不可下载打印文件方法
+     * @param excelTemplate 模板名称
+     * @param inputStream 输入流
+     * @param outputStream 输出流
+     * @param context 模板数据容器
+     * @return 需要打印的文件字节流
+     * @throws IOException io异常
+     */
     public static byte[] generateStream(String excelTemplate, InputStream inputStream, ByteArrayOutputStream outputStream,
                                         Context context) throws IOException {
         //转成excel 输出流
         handleInputStream(inputStream, outputStream, context);
         byte[] buf = outputStream.toByteArray();
-        //默认就是excel 类型
-        String fileName = generateFileName(excelTemplate);
+        //默认就是pdf类型
+        generateFileName(excelTemplate);
         //获取字节数组
         buf = generateByteBuf(buf, outputStream);
         return buf;
     }
 
+    /**
+     * 数据绑定
+     * @param inputStream 输入流(模板excel)
+     * @param outputStream 输出流(数据绑定后的excel)
+     * @param context excel数据容器
+     * @throws IOException io异常
+     */
     public static void handleInputStream(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
-
         JxlsHelper jxlsHelper = JxlsHelper.getInstance();
         Transformer transformer = TransformerFactory.createTransformer(inputStream, outputStream);
-        //默认是打开时渲染
-        transformer.setFullFormulaRecalculationOnOpening(true);
-        //获得配置
-        JexlExpressionEvaluator evaluator = (JexlExpressionEvaluator) transformer.getTransformationConfig().getExpressionEvaluator();
-        JexlBuilder jexlBuilder = new JexlBuilder();
-        JexlEngine engine = new Engine(jexlBuilder);
-        evaluator.setJexlEngine(engine);
         jxlsHelper.processTemplate(context, transformer);
     }
 
+    /**
+     * 获取文件名称
+     * @param excelTemplate 模板名称
+     * @return 文件最终名称
+     */
     private static String generateFileName(String excelTemplate) {
         int i = excelTemplate.lastIndexOf(".");
         String tmpName = excelTemplate.substring(0, i);
         return tmpName + ".pdf";
     }
 
+    /**
+     * excel文件转pdf文件
+     * @param bytes excel文件字节流
+     * @param outputStream
+     * @return
+     */
     private static byte[] generateByteBuf(byte[] bytes, ByteArrayOutputStream outputStream) {
         ByteArrayInputStream byteArrayInputStream = null;
         //判断输出文件 类型
-
         byteArrayInputStream = new ByteArrayInputStream(bytes);
         outputStream.reset();
         PdfUtil.excelToPDF(byteArrayInputStream, outputStream);
         bytes = outputStream.toByteArray();
-
         closeStream(byteArrayInputStream);
         return bytes;
     }
