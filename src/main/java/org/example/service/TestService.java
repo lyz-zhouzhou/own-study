@@ -9,5 +9,5 @@ public interface TestService {
 
     String print(String templateName, String printName);
 
-    String printCustomize(String templateName, String printName, JSONObject jsonObject);
+    String printCustomize(String templateName, String printName, JSONObject jsonObject, Integer paperNumber);
 }

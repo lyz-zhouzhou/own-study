@@ -100,6 +100,7 @@ public class TestServiceImpl implements TestService {
             if (Strings.isEmpty(printName)) {
                 return "未指定打印机";
             }
+            //获取模板
             InputStream resourceAsStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("excelTemplate/" + templateName);
             //调用外部接口获得模板数据(如何判断获取哪个模板的数据)
             // 准备数据
@@ -135,7 +136,7 @@ public class TestServiceImpl implements TestService {
             context.putVar("items", items);
             //获得可打印文件字节流
             byte[] bytes = FileUtil.generateStream(templateName, resourceAsStream, new ByteArrayOutputStream(), context);
-            printUtil.print(bytes, printName, null);
+            printUtil.print(bytes, printName, null, null);
             return "打印成功";
         } catch (Exception e) {
             e.printStackTrace();
@@ -145,9 +146,13 @@ public class TestServiceImpl implements TestService {
 
     /**
      * 自定义打印
+     *
+     * @param templateName 模板名称
+     * @param printName    打印机名称
+     * @param jsonObject   纸张属性
      */
     @Override
-    public String printCustomize(String templateName, String printName, JSONObject jsonObject) {
+    public String printCustomize(String templateName, String printName, JSONObject jsonObject, Integer paperNumber) {
         try {
             //根据模板名称寻找是否存在此模板
             if (!isTemplateExist(templateName)) {
@@ -190,7 +195,7 @@ public class TestServiceImpl implements TestService {
             byte[] bytes = FileUtil.generateStream(templateName, resourceAsStream, new ByteArrayOutputStream(), context);
             //获得打印参数(纸张设置、打印机名称)
             //调用打印方法进行打印
-            printUtil.print(bytes, printName, null);
+            printUtil.print(bytes, printName, jsonObject, paperNumber);
             return "打印成功";
         } catch (Exception e) {
             e.printStackTrace();
