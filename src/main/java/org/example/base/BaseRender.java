@@ -2,6 +2,7 @@ package org.example.base;
 
 import com.alibaba.fastjson.JSONObject;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +19,7 @@ public abstract class BaseRender {
         return this.otherParams;
     }
 
-    public void beforeRender(List<JSONObject> itemsObj, Map<String, Object> otherParams){
+    public void beforeRender(List<JSONObject> itemsObj, Map<String, Object> otherParams) {
         this.itemsObj = itemsObj;
         this.otherParams = otherParams;
 
@@ -27,6 +28,6 @@ public abstract class BaseRender {
 
     }
 
-    public abstract List<JSONObject> renderItemsObj(List<JSONObject> itemsObj);
+    public abstract List<JSONObject> renderItemsObj(List<JSONObject> itemsObj) ;
     public abstract Map<String, Object> renderOtherParams(Map<String, Object> otherParams);
 }

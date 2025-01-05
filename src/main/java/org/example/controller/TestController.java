@@ -30,8 +30,8 @@ public class TestController {
     @GetMapping("/test")
     public ResponseEntity<Void> test(HttpServletResponse response) throws IOException, WriterException {
         // 生成条形码图片
-        String barcodeText = "44";
-        byte[] barcodeBytes = barcodeGenerator.generateBarcodeImage(barcodeText, 100, 200);
+        String barcodeText = "test";
+        byte[] barcodeBytes = barcodeGenerator.generateBarcodeImage(barcodeText, 300, 100);
 
         // 设置响应头
         response.setContentType(MediaType.IMAGE_PNG_VALUE); // 设置 MIME 类型为 image/png

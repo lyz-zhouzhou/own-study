@@ -7,6 +7,7 @@ import org.example.utils.BarcodeGenerator;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,20 +19,28 @@ public class Order extends BaseRender {
     private BarcodeGenerator barcodeGenerator;
 
     @Override
-    public List<JSONObject> renderItemsObj(List<JSONObject> itemsObj) {
-        ArrayList<JSONObject> items = new ArrayList<>();
-        for (JSONObject jsonObject : itemsObj) {
-            JSONObject renderJsonObject = new JSONObject();
-            renderJsonObject.put("itemNumber", jsonObject.get("itemNumber"));
-            renderJsonObject.put("itemDes", jsonObject.get("itemDes"));
-            renderJsonObject.put("quantity", jsonObject.get("quantity"));
-            renderJsonObject.put("uom", jsonObject.get("uom"));
-            renderJsonObject.put("subQuantity", jsonObject.get("subQuantity"));
-            renderJsonObject.put("subUom", jsonObject.get("subUom"));
-            renderJsonObject.put("location", jsonObject.get("location"));
-            items.add(renderJsonObject);
+    public List<JSONObject> renderItemsObj(List<JSONObject> itemsObj){
+        try {
+            ArrayList<JSONObject> items = new ArrayList<>();
+            for (JSONObject jsonObject : itemsObj) {
+                JSONObject renderJsonObject = new JSONObject();
+                //renderJsonObject.put("itemNumber", jsonObject.getString("itemNumber"));
+                //byte[] bytes = barcodeGenerator.generateBarcodeImage(jsonObject.getString("itemNumber"), 300, 100);
+                byte[] bytes = barcodeGenerator.code128(jsonObject.getString("itemNumber"), 250, 150, 40, 24);
+                renderJsonObject.put("image", bytes);
+                renderJsonObject.put("itemDes", jsonObject.get("itemDes"));
+                renderJsonObject.put("quantity", jsonObject.get("quantity"));
+                renderJsonObject.put("uom", jsonObject.get("uom"));
+                renderJsonObject.put("subQuantity", jsonObject.get("subQuantity"));
+                renderJsonObject.put("subUom", jsonObject.get("subUom"));
+                renderJsonObject.put("location", jsonObject.get("location"));
+                items.add(renderJsonObject);
+            }
+            return items;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return items;
+        return null;
     }
 
     @Override
@@ -41,8 +50,9 @@ public class Order extends BaseRender {
             renderOtherMap.put("orderNumber", otherParams.get("orderNumber"));
             renderOtherMap.put("customerName", otherParams.get("customerName"));
             renderOtherMap.put("remarks", otherParams.get("remarks"));
-            byte[] bytes = barcodeGenerator.generateBarcodeImage((String) otherParams.get("orderNumber"), 23, 1);
-            otherParams.put("image.QRCode", bytes);
+            //byte[] bytes = barcodeGenerator.code128((String) otherParams.get("orderNumber"), 250, 150, 40, 24);
+            byte[] bytes = barcodeGenerator.generateBarcodeImage((String) otherParams.get("orderNumber"), 300, 100);
+            renderOtherMap.put("image.QRCode", bytes);
             return renderOtherMap;
         } catch (Exception e) {
             e.printStackTrace();
