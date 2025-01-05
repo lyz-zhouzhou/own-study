@@ -48,7 +48,7 @@ public class TestController {
     @GetMapping("/pdf")
     public ResponseEntity<Void> exportToPdf(HttpServletResponse response) throws IOException {
         try {
-            testService.printTest("order.xlsx",response);
+            testService.printTest("order_qrcode.xlsx",response);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             e.printStackTrace();

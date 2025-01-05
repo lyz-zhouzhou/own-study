@@ -42,6 +42,26 @@ public class BarcodeGenerator {
     }
 
     /**
+     * 生成二维码图片
+     *
+     * @param qrCodeText 二维码内容
+     * @param width      图片宽度
+     * @param height     图片高度
+     * @return 二维码图片的字节数组
+     */
+    public byte[] generateQRCodeImage(String qrCodeText, int width, int height) throws WriterException, IOException {
+        // 使用 QRCodeWriter 生成二维码
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        BitMatrix bitMatrix = qrCodeWriter.encode(qrCodeText, BarcodeFormat.QR_CODE, width, height);
+
+        // 将二维码图片转换为字节数组
+        BufferedImage bufferedImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(bufferedImage, "png", baos);
+        return baos.toByteArray();
+    }
+
+    /**
      * 生成条形码
      *
      * @param barCodeInfo   条形码内容
